@@ -16,14 +16,14 @@ docs = text_splitter.split_documents(documents)
 embeddings = HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")
 
 
-# 5. Vector DB storage by langchain vectorstores, using FAISS for smart search
+# Vector DB storage by langchain vectorstores, using FAISS for smart search
 vectorstore = FAISS.from_documents(docs, embeddings)
 
 
-# 6. Retriever
+# Retriever
 retriever = vectorstore.as_retriever()
 
-# 7. LLM (Better model)
+# LLM (Better model)
 pipe = pipeline(
     "text2text-generation",
     model="google/flan-t5-base",

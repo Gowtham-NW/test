@@ -9,21 +9,21 @@ loader = PyPDFLoader("Data Scientist.pdf")
 documents = loader.load()
 
 # Split text, using langchain_text_splitters
-text_splitter = CharacterTextSplitter(chunk_size=1000, chunk_overlap=200)
+text_splitter = CharacterTextSplitter(chunk_size=400, chunk_overlap=50)
 docs = text_splitter.split_documents(documents)
 
 # Embeddings
 embeddings = HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")
 
 
-# 5. Vector DB storage by langchain vectorstores, using FAISS for smart search
+# Vector DB storage by langchain vectorstores, using FAISS for smart search
 vectorstore = FAISS.from_documents(docs, embeddings)
 
 
-# 6. Retriever
-retriever = vectorstore.as_retriever()
+# Retriever
+retriever = vectorstore.as_retriever(search_kwargs={"k": 3})
 
-# 7. LLM (Better model)
+# LLM flan t5 base
 pipe = pipeline(
     "text2text-generation",
     model="google/flan-t5-base",
@@ -32,22 +32,21 @@ pipe = pipeline(
 )
 
 # user Query
-query = "what is this pdf about"
+query = "Summarize the entire document and explain what it is about"
 
-# Retrieve relevant docs
-retrieved_docs = retriever.invoke(query)
-
-# Combine context
-context = "\n".join([doc.page_content for doc in retrieved_docs])
+# Retrieve relevant docs using fewer retrieved chunks for pdf
+retrieved_docs = retriever.invoke(query)[:2]
+# Combine context(limiting this for pdf)
+context = "\n".join([doc.page_content for doc in retrieved_docs])[:1000]
 
 # prompt engineering
 prompt = f"""
-Answer the question clearly in 1-2 sentences.
+You are an expert assistant.
+
+Based on the context below, explain what the document is about in 2 clear sentences.
 
 Context:
 {context}
-
-Question: {query}
 
 Answer:
 """

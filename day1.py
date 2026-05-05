@@ -1,25 +1,22 @@
-# onboarding.py
-
-# 1. Imports
 from langchain_community.document_loaders import TextLoader
 from langchain_text_splitters import CharacterTextSplitter
 from langchain_community.embeddings import HuggingFaceEmbeddings
 from langchain_community.vectorstores import FAISS
 from transformers import pipeline
 
-# 2. Load document
+# Loading document, using langchain community document loaders
 loader = TextLoader("info.txt")
 documents = loader.load()
 
-# 3. Split text
+# Split text, using langchain_text_splitters
 text_splitter = CharacterTextSplitter(chunk_size=500, chunk_overlap=50)
 docs = text_splitter.split_documents(documents)
 
-# 4. Embeddings
+# Embeddings
 embeddings = HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")
 
 
-# 5. Vector DB
+# 5. Vector DB storage by langchain vectorstores, using FAISS for smart search
 vectorstore = FAISS.from_documents(docs, embeddings)
 
 
@@ -34,16 +31,16 @@ pipe = pipeline(
     do_sample=False
 )
 
-# 8. Query
+# user Query
 query = "what is langchain"
 
-# 9. Retrieve relevant docs
+# Retrieve relevant docs
 retrieved_docs = retriever.invoke(query)
 
-# 10. Combine context
+# Combine context
 context = "\n".join([doc.page_content for doc in retrieved_docs])
 
-# 11. prompt engineering
+# prompt engineering
 prompt = f"""
 Answer the question clearly in 1-2 sentences.
 
@@ -55,10 +52,10 @@ Question: {query}
 Answer:
 """
 
-# 12. Generate response (direct pipeline)
+# Generate response (direct pipeline)
 result = pipe(prompt)
 
-# 13. Extract answer
+# Extract answer
 answer = result[0]["generated_text"]
 
 print("\n✅ Final Answer:\n")
